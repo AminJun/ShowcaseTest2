@@ -1,0 +1,201 @@
+<!doctype html>
+<meta charset="utf-8">
+<script src="https://distill.pub/template.v2.js"></script>
+<script src="rebuttal.json"></script>
+<script type="text/javascript" src="rebuttal.json"></script>
+<title> Visualization for Transformer Networks </title>
+<script type="text/front-matter">
+  title: "ViTVis"
+  description: "ViTViS"
+
+
+
+
+
+
+
+
+</script>
+<style>
+    img {
+        width: 150px;
+    }
+
+    .table_name {
+        text-align: center;
+        /*display: block;*/
+        white-space: pre-line;
+        width: 200px;
+        word-break: break-all;
+        /*overflow: hidden;*/
+    }
+
+    th, td {
+        text-align: center;
+    }
+</style>
+<script type="text/javascript">
+
+    const n_layers = {
+        41: 12, 42: 12, 43: 12, 44: 12, 45: 12, 46: 12, 47: 8, 48: 16, 49: 8, 50: 14, 51: 14, 52: 12, 53: 12, 54: 12,
+        62: 13, 63: 13, 64: 12, 65: 12, 66: 12, 67: 12, 68: 12, 78: 24, 79: 24, 80: 24, 81: 24, 82: 24, 83: 24, 84: 24,
+        85: 24, 86: 24, 87: 12, 88: 28, 89: 41, 90: 16, 91: 24, 92: 24, 93: 18
+    };
+
+    const networks = [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 62, 63, 64, 65, 66, 67, 68, 78, 79, 80, 81, 82, 83,
+        84, 85, 86, 87, 88, 89, 90, 91, 92, 93,]
+
+    const network_name = {
+        41: "DeiT_0_deit_base_patch16_224",
+        42: "DeiT_1_deit_base_distilled_patch16_384",
+        43: "DeiT_2_deit_base_patch16_384",
+        44: "DeiT_3_deit_tiny_distilled_patch16_224",
+        45: "DeiT_4_deit_small_distilled_patch16_224",
+        46: "DeiT_5_deit_base_distilled_patch16_224",
+        47: "CoaT_0_coat_lite_mini",
+        48: "CoaT_1_coat_lite_small",
+        49: "CoaT_2_coat_lite_tiny",
+        50: "CoaT_3_coat_mini",
+        51: "CoaT_4_coat_tiny",
+        52: "ConViT_0_convit_base",
+        53: "ConViT_1_convit_small",
+        54: "ConViT_2_convit_tiny",
+        62: "PiT_0_pit_b_224",
+        63: "PiT_1_pit_b_distilled_224",
+        64: "PiT_2_pit_s_224",
+        65: "PiT_3_pit_s_distilled_224",
+        66: "PiT_4_pit_ti_224",
+        67: "PiT_5_pit_ti_distilled_224",
+        68: "PiT_6_pit_xs_224",
+        78: "Swin_0_swin_base_patch4_window7_224",
+        79: "Swin_1_swin_base_patch4_window7_224_in22k",
+        80: "Swin_2_swin_base_patch4_window12_384",
+        81: "Swin_3_swin_base_patch4_window12_384_in22k",
+        82: "Swin_4_swin_large_patch4_window7_224",
+        83: "Swin_5_swin_large_patch4_window7_224_in22k",
+        84: "Swin_6_swin_large_patch4_window12_384",
+        85: "Swin_7_swin_large_patch4_window12_384_in22k",
+        86: "Swin_8_swin_small_patch4_window7_224",
+        87: "Swin_9_swin_tiny_patch4_window7_224",
+        88: "Twin_0_twins_pcpvt_base",
+        89: "Twin_1_twins_pcpvt_large",
+        90: "Twin_2_twins_pcpvt_small",
+        91: "Twin_3_twins_svt_base",
+        92: "Twin_4_twins_svt_large",
+        93: "Twin_5_twins_svt_small"
+    }
+
+    function make_table_for_network(network) {
+        let output = "";
+        let per_row = 4;
+        let nat_examples = 2;
+        let name = network_name[network];
+        let data = show_case[network];
+        console.log(network);
+
+        if (data == null) return "";
+        output += "<h2> Network " + name + " </h2>"
+        output += "<table style='text-align: center;'>";
+        for (let row = 0; row < (data.length + per_row) / per_row; row += 1) {
+            // HEADER
+            output += "<tr>";
+            output += "<th rowspan='2' style='text-align: right;'> Visualization </th>";
+            for (let col = 0; col < per_row; col += 1) {
+                let index = col + row * per_row;
+                if (index >= data.length) break
+                const cur_data = data[index]
+                const layer = cur_data['layer']
+                const feature = cur_data['feature']
+                output += "<th colspan='" + 2 + "' style='text-align: center;'> L: " + layer + " F: " + feature + "</th>";
+            }
+            output += "</tr>";
+
+            // Vis
+            output += "<tr>";
+            for (let col = 0; col < per_row; col += 1) {
+                let index = col + row * per_row;
+                if (index >= data.length) break
+                const cur_data = data[index]
+                const layer = cur_data['layer']
+                const feature = cur_data['feature']
+                output += "<td style='text-align: center; ' colspan='2'> <img style='width: 300px; ' src='images/vis_" + network + "_" + layer + "_" + (feature) + ".jpg'></td>";
+            }
+            output += "</tr>";
+
+            // Eval Header
+            output += "<tr>";
+            output += "<th rowspan='3' style='text-align: right;'> Val </th>";
+            for (let col = 0; col < per_row; col += 1) {
+                output += "<th colspan='" + 1 + "' style='text-align: center;'> Best Images </th>";
+                output += "<th colspan='" + 1 + "' style='text-align: center;'> Activation </th>";
+            }
+            output += "</tr>";
+
+            for (let ne = 0; ne < nat_examples; ne += 1) {
+                output += "<tr>";
+                for (let col = 0; col < per_row; col += 1) {
+                    let index = col + row * per_row;
+                    if (index >= data.length) break
+                    const cur_data = data[index]
+                    const layer = cur_data['layer']
+                    const feature = cur_data['feature']
+                    output += "<td style='text-align: center;'> <img src='images/eval_" + network + "_" + layer + "_" + feature + "_" + ne + ".jpg'></td>";
+                    output += "<td style='text-align: center;'> <img src='images/eval_mask_" + network + "_" + layer + "_" + feature + "_" + ne + ".jpg'></td>";
+                }
+                output += "</tr>";
+            }
+
+            // Train Header
+            output += "<tr>";
+            output += "<th rowspan='3' style='text-align: right;'> Train </th>";
+            for (let col = 0; col < per_row; col += 1) {
+                output += "<th colspan='" + 1 + "' style='text-align: center;'> Best Images </th>";
+                output += "<th colspan='" + 1 + "' style='text-align: center;'> Activation </th>";
+            }
+            output += "</tr>";
+
+            for (let ne = 0; ne < nat_examples; ne += 1) {
+                output += "<tr>";
+                for (let col = 0; col < per_row; col += 1) {
+                    let index = col + row * per_row;
+                    if (index >= data.length) break
+                    const cur_data = data[index]
+                    const layer = cur_data['layer']
+                    const feature = cur_data['feature']
+                    output += "<td style='text-align: center;'> <img src='images/train_" + network + "_" + layer + "_" + feature + "_" + ne + ".jpg'></td>";
+                    output += "<td style='text-align: center;'> <img src='images/train_mask_" + network + "_" + layer + "_" + feature + "_" + ne + ".jpg'></td>";
+                }
+                output += "</tr>";
+            }
+        }
+        output += "</table>";
+        return output;
+    }
+
+    function make_groups() {
+        let output = "";
+        for (const net of networks)
+            output += make_table_for_network(net);
+        return output;
+    }
+
+
+    window.onload = function () {
+        document.getElementById('images').innerHTML = make_groups();
+    };
+</script>
+
+<style type="text/style">
+    td {
+        text-align: center;
+    }
+</style>
+
+<d-title>
+    <h1> VitViS </h1>
+    <p> VitViS </p>
+</d-title>
+
+<d-article>
+    <div id='images' class='l-screen-inset' style="margin: auto;"></div>
+</d-article>
